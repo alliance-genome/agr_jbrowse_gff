@@ -24,7 +24,7 @@ done
 
 if [ -z "$RELEASE" ]
 then
-    RELEASE=${WB_RELEASE}
+    RELEASE=${RELEASE}
 fi
 
 if [ -z "$AWSACCESS" ]
@@ -73,11 +73,13 @@ PATHPART=(
 )
 
 WORKDIR=/jbrowse
+cd $WORKDIR
 
-for org in "${PATHPART[@]}'; do
+parallel -j 2 wget https://fms.alliancegenome.org/download/GFF_{}.gff.gz ::: "${PATHPART[@]}"
 
-done
+parallel -j 2 --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gz --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All Genes"  --trackType CanvasFeatures --key "All Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
 
+parallel -j 2 bin/generate_names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
 
 DATADIR=/jbrowse/data
 
@@ -87,7 +89,7 @@ cd $DATADIR
 UPLOADTOS3PATH=/agr_jbrowse_config/scripts/upload_to_S3.pl
 
 
-parallel -j "95%" $UPLOADTOS3PATH --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
+parallel -j 2 $UPLOADTOS3PATH --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
  
 
 
