@@ -54,22 +54,22 @@ echo $RELEASE
 
 SPECIESLIST=(
 'FlyBase/fruitfly'
-'MGI/mouse'
-'RGD/rat'
-'human'
+#'MGI/mouse'
+#'RGD/rat'
+#'human'
 'SGD/yeast'
 'WormBase/c_elegans_PRJNA13758'
-'zfin/zebrafish-11'
+#'zfin/zebrafish-11'
 )
 
 PATHPART=(
 'FB'
-'MGI'
-'RGD'
-'HUMAN'
+#'MGI'
+#'RGD'
+#'HUMAN'
 'SGD'
 'WB'
-'ZFIN'
+#'ZFIN'
 )
 
 WORKDIR=/jbrowse
