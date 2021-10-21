@@ -79,8 +79,10 @@ parallel -j 2 wget https://fms.alliancegenome.org/download/GFF_{}.gff.gz ::: "${
 
 parallel -j 2 gzip -d GFF_{}.gff.gz ::: "${PATHPART[@]}"
 
-parallel -j 2 --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All Genes"  --trackType CanvasFeatures --key "All Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
+echo "starting flatfile_to_json"
+parallel -j 2 --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
 
+echo "starting generate_names"
 parallel -j 2 bin/generate_names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
 
 DATADIR=/jbrowse/data
@@ -91,7 +93,7 @@ cd $DATADIR
 UPLOADTOS3PATH=/agr_jbrowse_config/scripts/upload_to_S3.pl
 
 
-parallel -j 2 $UPLOADTOS3PATH --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
+parallel -j 2 $UPLOADTOS3PATH --skipseq --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
  
 
 
