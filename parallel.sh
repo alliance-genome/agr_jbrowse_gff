@@ -54,36 +54,36 @@ echo $RELEASE
 
 SPECIESLIST=(
 'FlyBase/fruitfly'
-#'MGI/mouse'
-#'RGD/rat'
-#'human'
+'MGI/mouse'
+'RGD/rat'
+'human'
 'SGD/yeast'
 'WormBase/c_elegans_PRJNA13758'
-#'zfin/zebrafish-11'
+'zfin/zebrafish-11'
 )
 
 PATHPART=(
 'FB'
-#'MGI'
-#'RGD'
-#'HUMAN'
+'MGI'
+'RGD'
+'HUMAN'
 'SGD'
 'WB'
-#'ZFIN'
+'ZFIN'
 )
 
 WORKDIR=/jbrowse
 cd $WORKDIR
 
-parallel -j 2 wget -q https://fms.alliancegenome.org/download/GFF_{}.gff.gz ::: "${PATHPART[@]}"
+parallel wget -q https://fms.alliancegenome.org/download/GFF_{}.gff.gz ::: "${PATHPART[@]}"
 
-parallel -j 2 gzip -d GFF_{}.gff.gz ::: "${PATHPART[@]}"
+parallel gzip -d GFF_{}.gff.gz ::: "${PATHPART[@]}"
 
 echo "starting flatfile_to_json"
-parallel -j 2 --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
+parallel --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
 
 echo "starting generate_names"
-parallel -j 2 bin/generate-names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
+parallel bin/generate-names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
 
 DATADIR=/jbrowse/data
 
@@ -93,7 +93,7 @@ cd $DATADIR
 UPLOADTOS3PATH=/agr_jbrowse_config/scripts/upload_to_S3.pl
 
 
-parallel -j 2 $UPLOADTOS3PATH --skipseq --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
+parallel $UPLOADTOS3PATH --skipseq --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
  
 
 
