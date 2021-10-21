@@ -83,7 +83,7 @@ echo "starting flatfile_to_json"
 parallel -j 2 --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
 
 echo "starting generate_names"
-parallel -j 2 bin/generate_names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
+parallel -j 2 bin/generate-names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
 
 DATADIR=/jbrowse/data
 
