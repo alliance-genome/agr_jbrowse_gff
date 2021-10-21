@@ -75,7 +75,7 @@ PATHPART=(
 WORKDIR=/jbrowse
 cd $WORKDIR
 
-parallel -j 2 wget https://fms.alliancegenome.org/download/GFF_{}.gff.gz ::: "${PATHPART[@]}"
+parallel -j 2 wget -q https://fms.alliancegenome.org/download/GFF_{}.gff.gz ::: "${PATHPART[@]}"
 
 parallel -j 2 gzip -d GFF_{}.gff.gz ::: "${PATHPART[@]}"
 
