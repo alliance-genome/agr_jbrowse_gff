@@ -28,8 +28,20 @@ RUN git clone --single-branch --branch main https://github.com/alliance-genome/a
 RUN git clone --single-branch --branch master https://github.com/alliance-genome/agr_jbrowse_config.git
 
 RUN cp /agr_jbrowse_gff/parallel.sh / && \
-    mkdir -p /jbrowse/data/seq 
-
+    mkdir -p /jbrowse/data/FlyBase/fruitfly/seq && \
+    mkdir -p /jbrowse/data/MGI/mouse/seq && \
+    mkdir -p /jbrowse/data/RGD/rat/seq && \
+    mkdir -p /jbrowse/data/human/seq && \
+    mkdir -p /jbrowse/data/SGD/yeast/seq && \
+    mkdir -p /jbrowse/data/WormBase/c_elegans_PRJNA13758/seq && \
+    mkdir -p /jbrowse/data/zfin/zebrafish-11/seq && \
+    cp /agr_jbrowse_config/jbrowse/data/fly/seq/refSeqs.json /jbrowse/data/FlyBase/fruitfly/seq && \
+    cp /agr_jbrowse_config/jbrowse/data/human/seq/refSeqs.json /jbrowse/data/human/seq && \
+    cp /agr_jbrowse_config/jbrowse/data/MGI/seq/refSeqs.json /jbrowse/data/MGI/mouse/seq && \
+    cp /agr_jbrowse_config/jbrowse/data/RGD/seq/refSeqs.json /jbrowse/data/RGD/rat/seq && \
+    cp /agr_jbrowse_config/jbrowse/data/worm/seq/refSeqs.json /jbrowse/data/WormBase/c_elegans_PRJNA13758/seq && \
+    cp /agr_jbrowse_config/jbrowse/data/yeast/seq/refSeqs.json /jbrowse/data/SGD/yeast/seq && \
+    cp /agr_jbrowse_config/jbrowse/data/zebrafish/seq/refSeqs.json /jbrowse/data/zfin/zebrafish-11/seq 
 
 
 VOLUME /data
