@@ -2,7 +2,7 @@
 
 #set -e
 
-RELEASE=4.2.0
+RELEASE=4.1.1
 while getopts r:s:a:k: option
 do
 case "${option}"
@@ -41,7 +41,7 @@ if [ -z "$AWSBUCKET" ]
 then
     if [ -z "${AWS_S3_BUCKET}" ]
     then
-        AWSBUCKET=agrjbrowse2
+        AWSBUCKET=agrjbrowse
     else
         AWSBUCKET=${AWS_S3_BUCKET}
     fi
