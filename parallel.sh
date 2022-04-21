@@ -93,7 +93,7 @@ cd $DATADIR
 UPLOADTOS3PATH=/agr_jbrowse_config/scripts/upload_to_S3.pl
 
 
-parallel $UPLOADTOS3PATH --quiet --skipseq --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
+parallel $UPLOADTOS3PATH --skipseq --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
  
 
 
