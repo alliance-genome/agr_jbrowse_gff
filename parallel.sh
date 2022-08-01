@@ -2,7 +2,7 @@
 
 #set -e
 
-RELEASE=5.2.2
+RELEASE=5.3.0
 while getopts r:s:a:k: option
 do
 case "${option}"
@@ -60,6 +60,8 @@ SPECIESLIST=(
 'SGD/yeast'
 'WormBase/c_elegans_PRJNA13758'
 'zfin/zebrafish-11'
+'XenBase/x_laevis'
+'XenBase/x_tropicalis'
 )
 
 PATHPART=(
@@ -70,6 +72,8 @@ PATHPART=(
 'SGD'
 'WB'
 'ZFIN'
+'XenBase'
+'XenBase'
 )
 
 WORKDIR=/jbrowse
