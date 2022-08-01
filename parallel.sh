@@ -72,8 +72,8 @@ PATHPART=(
 'SGD'
 'WB'
 'ZFIN'
-'XenBase'
-'XenBase'
+'XBXL'
+'XBXT'
 )
 
 WORKDIR=/jbrowse
