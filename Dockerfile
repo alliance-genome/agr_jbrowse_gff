@@ -28,6 +28,7 @@ RUN git clone --single-branch --branch main https://github.com/alliance-genome/a
 RUN git clone --single-branch --branch master https://github.com/alliance-genome/agr_jbrowse_config.git
 
 RUN cp /agr_jbrowse_gff/parallel.sh / && \
+    cp /agr_jbrowse_gff/get_gff_urls.py / && \
     mkdir -p /jbrowse/data/FlyBase/fruitfly/seq && \
     mkdir -p /jbrowse/data/MGI/mouse/seq && \
     mkdir -p /jbrowse/data/RGD/rat/seq && \
