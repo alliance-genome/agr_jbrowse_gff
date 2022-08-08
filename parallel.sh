@@ -81,7 +81,7 @@ WORKDIR=/jbrowse
 cd $WORKDIR
 
 #parallel wget -q https://fms.alliancegenome.org/download/GFF_{}.gff.gz ::: "${PATHPART[@]}"
-curl https://fms.alliancegenome.org/api/datafile/by/GFF?latest=true | python3 get_gff_urls.py | parallel
+curl https://fms.alliancegenome.org/api/datafile/by/GFF?latest=true | python3 /get_gff_urls.py | parallel
 
 
 #sloppy way to match the number in the file name 
