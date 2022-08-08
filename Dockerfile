@@ -37,7 +37,7 @@ RUN cp /agr_jbrowse_gff/parallel.sh / && \
     mkdir -p /jbrowse/data/WormBase/c_elegans_PRJNA13758/seq && \
     mkdir -p /jbrowse/data/zfin/zebrafish-11/seq && \
     mkdir -p /jbrowse/data/XenBase/x_laevis/seq && \
-    mkdir -p /jbrowse/data/XenBase/x_tropicalis && \
+    mkdir -p /jbrowse/data/XenBase/x_tropicalis/seq && \
     cp /agr_jbrowse_config/jbrowse/data/fly/seq/refSeqs.json /jbrowse/data/FlyBase/fruitfly/seq && \
     cp /agr_jbrowse_config/jbrowse/data/human/seq/refSeqs.json /jbrowse/data/human/seq && \
     cp /agr_jbrowse_config/jbrowse/data/MGI/seq/refSeqs.json /jbrowse/data/MGI/mouse/seq && \
