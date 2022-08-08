@@ -3,6 +3,7 @@
 #set -e
 
 RELEASE=5.3.0
+
 while getopts r:s:a:k: option
 do
 case "${option}"
