@@ -25,7 +25,7 @@ FROM gmod/jbrowse-gff-base:latest
 LABEL maintainer="scott@scottcain.net"
 
 RUN git clone --single-branch --branch main https://github.com/alliance-genome/agr_jbrowse_gff.git
-RUN git clone --single-branch --branch release-5.4.0 https://github.com/alliance-genome/agr_jbrowse_config.git
+RUN git clone --single-branch --branch release-6.0.0 https://github.com/alliance-genome/agr_jbrowse_config.git
 
 RUN cp /agr_jbrowse_gff/parallel.sh / && \
     cp /agr_jbrowse_gff/get_gff_urls.py / && \
