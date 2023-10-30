@@ -88,6 +88,9 @@ curl https://fms.alliancegenome.org/api/datafile/by/GFF?latest=true | python3 /g
 parallel gzip -d GFF_{}*.gff.gz ::: "${PATHPART[@]}"
 parallel mv GFF_{}*.gff GFF_{}.gff ::: "${PATHPART[@]}"
 
+#create bed files for orthology tracks
+parallel scripts/gff2bedgenes.pl {} ::: "${PATHPART[@]}"
+
 echo "starting flatfile_to_json"
 parallel --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
 
