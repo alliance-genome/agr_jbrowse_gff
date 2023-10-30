@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -e
+set -e
 
 RELEASE=6.0.1
 
