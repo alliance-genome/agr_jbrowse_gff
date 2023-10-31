@@ -89,8 +89,8 @@ parallel gzip -d GFF_{}*.gff.gz ::: "${PATHPART[@]}"
 parallel mv GFF_{}*.gff GFF_{}.gff ::: "${PATHPART[@]}"
 
 #create bed files for orthology tracks
-parallel /agr_jbrowse_gff/scripts/gff2bedgenes.pl "{}" ::: "${PATHPART[@]}"
-AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read {}.bed s3://agrjbrowse/orthology/$RELEASE/ ::: "${PATHPART[@]}"
+parallel /agr_jbrowse_gff/scripts/gff2bedgenes.pl {} ::: "${PATHPART[@]}"
+parallel AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read {}.bed s3://agrjbrowse/orthology/$RELEASE/ ::: "${PATHPART[@]}"
 
 
 echo "starting flatfile_to_json"
