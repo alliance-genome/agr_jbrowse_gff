@@ -212,7 +212,7 @@ for my $keys (keys %{$filehandle_map}) {
 #deposit new anchors files in S3
 my @anchors = <*.anchors>;
 for my $file (@anchors) {
-    system("aws s3 cp --acl public-read $file s3://agrjbrowse/orthology/$RELEASE/") == 0
+    system("AWS_ACCESS_KEY_ID=$ENV{'AWS_ACCESS_KEY'} AWS_SECRET_ACCESS_KEY=$ENV{'AWS_SECRET_KEY'} aws s3 cp --acl public-read $file s3://agrjbrowse/orthology/$RELEASE/") == 0
         or die "failed to copy $file to s3: $!";
 }
 
