@@ -92,6 +92,10 @@ parallel mv GFF_{}*.gff GFF_{}.gff ::: "${PATHPART[@]}"
 parallel /agr_jbrowse_gff/scripts/gff2bedgenes.pl {} ::: "${PATHPART[@]}"
 parallel AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read {}.bed s3://agrjbrowse/orthology/$RELEASE/ ::: "${PATHPART[@]}"
 
+# fetch orthology file and split to anchors files and upload
+/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE
+
+#will want to add sorting, bgzipping and tabix indexing of GFF files here 
 
 echo "starting flatfile_to_json"
 parallel --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
