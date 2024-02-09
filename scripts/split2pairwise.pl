@@ -4,6 +4,7 @@ use warnings;
 use JSON;
 
 my $RELEASE = $ARGV[0];
+my $TYPE    = $ARGV[1]; # one of "strict", "moderate" or "none"
 
 die "no release defined" unless $RELEASE;
 
@@ -31,49 +32,49 @@ system("gzip -d ORTHOLOGY-ALLIANCE_COMBINED_5.tsv.gz") == 0
 
 open ORTHOLOGY, "<ORTHOLOGY-ALLIANCE_COMBINED_5.tsv" or die "opening orthology file failed: $!";
 
-open my $h2r, ">", "human2rat.anchors" or die "Can't open human2rat.anchors:$!";
-open my $h2m, ">", "human2mouse.anchors" or die "Can't open human2mouse.anchors:$!";
-open my $h2z, ">", "human2zebrafish.anchors" or die "Can't open human2zebrafish.anchors:$!";
-open my $h2xl, ">", "human2xenopuslaevis.anchors" or die "Can't open human2xenopuslaevis.anchors:$!";
-open my $h2xt, ">", "human2xenopustropicalis.anchors" or die "Can't open human2xenopustropicalis.anchors:$!";
-open my $h2w, ">", "human2worm.anchors" or die "Can't open human2worm.anchors:$!";
-open my $h2f, ">", "human2fly.anchors" or die "Can't open human2fly.anchors:$!";
-open my $h2y, ">", "human2yeast.anchors" or die "Can't open human2yeast.anchors:$!";
+open my $h2r, ">", "human2rat.$TYPE.anchors" or die "Can't open human2rat.$TYPE.anchors:$!";
+open my $h2m, ">", "human2mouse.$TYPE.anchors" or die "Can't open human2mouse.$TYPE.anchors:$!";
+open my $h2z, ">", "human2zebrafish.$TYPE.anchors" or die "Can't open human2zebrafish.$TYPE.anchors:$!";
+open my $h2xl, ">", "human2xenopuslaevis.$TYPE.anchors" or die "Can't open human2xenopuslaevis.$TYPE.anchors:$!";
+open my $h2xt, ">", "human2xenopustropicalis.$TYPE.anchors" or die "Can't open human2xenopustropicalis.$TYPE.anchors:$!";
+open my $h2w, ">", "human2worm.$TYPE.anchors" or die "Can't open human2worm.$TYPE.anchors:$!";
+open my $h2f, ">", "human2fly.$TYPE.anchors" or die "Can't open human2fly.$TYPE.anchors:$!";
+open my $h2y, ">", "human2yeast.$TYPE.anchors" or die "Can't open human2yeast.$TYPE.anchors:$!";
 
-open my $r2m, ">", "rat2mouse.anchors" or die "Can't open rat2mouse.anchors:$!";
-open my $r2z, ">", "rat2zebrafish.anchors" or die "Can't open rat2zebrafish.anchors:$!";
-open my $r2xl, ">", "rat2xenopuslaevis.anchors" or die "Can't open rat2xenopuslaevis.anchors:$!";
-open my $r2xt, ">", "rat2xenopustropicalis.anchors" or die "Can't open rat2xenopustropicalis.anchors:$!";
-open my $r2w, ">", "rat2worm.anchors" or die "Can't open rat2worm.anchors:$!";
-open my $r2f, ">", "rat2fly.anchors" or die "Can't open rat2fly.anchors:$!";
-open my $r2y, ">", "rat2yeast.anchors" or die "Can't open rat2yeast.anchors:$!";
+open my $r2m, ">", "rat2mouse.$TYPE.anchors" or die "Can't open rat2mouse.$TYPE.anchors:$!";
+open my $r2z, ">", "rat2zebrafish.$TYPE.anchors" or die "Can't open rat2zebrafish.$TYPE.anchors:$!";
+open my $r2xl, ">", "rat2xenopuslaevis.$TYPE.anchors" or die "Can't open rat2xenopuslaevis.$TYPE.anchors:$!";
+open my $r2xt, ">", "rat2xenopustropicalis.$TYPE.anchors" or die "Can't open rat2xenopustropicalis.$TYPE.anchors:$!";
+open my $r2w, ">", "rat2worm.$TYPE.anchors" or die "Can't open rat2worm.$TYPE.anchors:$!";
+open my $r2f, ">", "rat2fly.$TYPE.anchors" or die "Can't open rat2fly.$TYPE.anchors:$!";
+open my $r2y, ">", "rat2yeast.$TYPE.anchors" or die "Can't open rat2yeast.$TYPE.anchors:$!";
 
-open my $m2z, ">", "mouse2zebrafish.anchors" or die "Can't open mouse2zebrafish.anchors:$!";
-open my $m2xl, ">", "mouse2xenopuslaevis.anchors" or die "Can't open mouse2xenopuslaevis.anchors:$!";
-open my $m2xt, ">", "mouse2xenopustropicalis.anchors" or die "Can't open mouse2xenopustropicalis.anchors:$!";
-open my $m2w, ">", "mouse2worm.anchors" or die "Can't open mouse2worm.anchors:$!";
-open my $m2f, ">", "mouse2fly.anchors" or die "Can't open mouse2fly.anchors:$!";
-open my $m2y, ">", "mouse2yeast.anchors" or die "Can't open mouse2yeast.anchors:$!";
+open my $m2z, ">", "mouse2zebrafish.$TYPE.anchors" or die "Can't open mouse2zebrafish.$TYPE.anchors:$!";
+open my $m2xl, ">", "mouse2xenopuslaevis.$TYPE.anchors" or die "Can't open mouse2xenopuslaevis.$TYPE.anchors:$!";
+open my $m2xt, ">", "mouse2xenopustropicalis.$TYPE.anchors" or die "Can't open mouse2xenopustropicalis.$TYPE.anchors:$!";
+open my $m2w, ">", "mouse2worm.$TYPE.anchors" or die "Can't open mouse2worm.$TYPE.anchors:$!";
+open my $m2f, ">", "mouse2fly.$TYPE.anchors" or die "Can't open mouse2fly.$TYPE.anchors:$!";
+open my $m2y, ">", "mouse2yeast.$TYPE.anchors" or die "Can't open mouse2yeast.$TYPE.anchors:$!";
 
-open my $z2xl, ">", "zebrafish2xenopuslaevis.anchors" or die "Can't open zebrafish2xenopuslaevis.anchors:$!";
-open my $z2xt, ">", "zebrafish2xenopustropicalis.anchors" or die "Can't open zebrafish2xenopustropicalis.anchors:$!";
-open my $z2w, ">", "zebrafish2worm.anchors" or die "Can't open zebrafish2worm.anchors:$!";
-open my $z2f, ">", "zebrafish2fly.anchors" or die "Can't open zebrafish2fly.anchors:$!";
-open my $z2y, ">", "zebrafish2yeast.anchors" or die "Can't open zebrafish2yeast.anchors:$!";
+open my $z2xl, ">", "zebrafish2xenopuslaevis.$TYPE.anchors" or die "Can't open zebrafish2xenopuslaevis.$TYPE.anchors:$!";
+open my $z2xt, ">", "zebrafish2xenopustropicalis.$TYPE.anchors" or die "Can't open zebrafish2xenopustropicalis.$TYPE.anchors:$!";
+open my $z2w, ">", "zebrafish2worm.$TYPE.anchors" or die "Can't open zebrafish2worm.$TYPE.anchors:$!";
+open my $z2f, ">", "zebrafish2fly.$TYPE.anchors" or die "Can't open zebrafish2fly.$TYPE.anchors:$!";
+open my $z2y, ">", "zebrafish2yeast.$TYPE.anchors" or die "Can't open zebrafish2yeast.$TYPE.anchors:$!";
 
-open my $xl2xt, ">", "xenopuslaevis2xenopustropicalis.anchors" or die "Can't open xenopuslaevis2xenopustropicalis.anchors:$!";
-open my $xl2w, ">", "xenopuslaevis2worm.anchors" or die "Can't open xenopuslaevis2worm.anchors:$!";
-open my $xl2f, ">", "xenopuslaevis2fly.anchors" or die "Can't open xenopuslaevis2fly.anchors:$!";
-open my $xl2y, ">", "xenopuslaevis2yeast.anchors" or die "Can't open xenopuslaevis2yeast.anchors:$!";
+open my $xl2xt, ">", "xenopuslaevis2xenopustropicalis.$TYPE.anchors" or die "Can't open xenopuslaevis2xenopustropicalis.$TYPE.anchors:$!";
+open my $xl2w, ">", "xenopuslaevis2worm.$TYPE.anchors" or die "Can't open xenopuslaevis2worm.$TYPE.anchors:$!";
+open my $xl2f, ">", "xenopuslaevis2fly.$TYPE.anchors" or die "Can't open xenopuslaevis2fly.$TYPE.anchors:$!";
+open my $xl2y, ">", "xenopuslaevis2yeast.$TYPE.anchors" or die "Can't open xenopuslaevis2yeast.$TYPE.anchors:$!";
 
-open my $xt2w, ">", "xenopustropicalis2worm.anchors" or die "Can't open xenopustropicalis2worm.anchors:$!";
-open my $xt2f, ">", "xenopustropicalis2fly.anchors" or die "Can't open xenopustropicalis2fly.anchors:$!";
-open my $xt2y, ">", "xenopustropicalis2yeast.anchors" or die "Can't open xenopustropicalis2yeast.anchors:$!";
+open my $xt2w, ">", "xenopustropicalis2worm.$TYPE.anchors" or die "Can't open xenopustropicalis2worm.$TYPE.anchors:$!";
+open my $xt2f, ">", "xenopustropicalis2fly.$TYPE.anchors" or die "Can't open xenopustropicalis2fly.$TYPE.anchors:$!";
+open my $xt2y, ">", "xenopustropicalis2yeast.$TYPE.anchors" or die "Can't open xenopustropicalis2yeast.$TYPE.anchors:$!";
 
-open my $w2f, ">", "worm2fly.anchors" or die "Can't open worm2fly.anchors:$!";
-open my $w2y, ">", "worm2yeast.anchors" or die "Can't open worm2yeast.anchors:$!";
+open my $w2f, ">", "worm2fly.$TYPE.anchors" or die "Can't open worm2fly.$TYPE.anchors:$!";
+open my $w2y, ">", "worm2yeast.$TYPE.anchors" or die "Can't open worm2yeast.$TYPE.anchors:$!";
 
-open my $f2y, ">", "fly2yeast.anchors" or die "Can't open fly2yeast.anchors:$!";
+open my $f2y, ">", "fly2yeast.$TYPE.anchors" or die "Can't open fly2yeast.$TYPE.anchors:$!";
 
 my $species_map ={ 
 	"NCBITaxon:7955" => "z",
@@ -189,18 +190,47 @@ while(<ORTHOLOGY>) {
     chomp;
     my $line = $_;
     my @line = split /\t/, $line;
+
     next if $line[0] eq 'Gene1ID';
-    next if $line[11] eq 'No';
-    next if $line[12] eq 'No';
+
+    next unless $genes{$line[2]}{$line[1]};
+    next unless $genes{$line[6]}{$line[5]};
 
     my $fh = $$filehandle_map{$$species_map{$line[2]} . "2" . $$species_map{$line[6]}};
 
     if (!defined $fh) {
-	print "No filehandle for $line[2] to $line[6]\n";
+        print "No filehandle for $line[2] to $line[6]\n";
+        next;
+    }
+
+    if (!defined $fh) {
+        print "No filehandle for $line[2] to $line[6]\n";
+        next;
+    }
+
+    #automatically include
+    if ($line[8] =~ /ZFIN/ or $line[8] =~ /HGNC/ or $line[8] =~ /Xenbase/) {
+        print $fh "$line[1]\t$line[5]\t100\n";
 	next;
     }
-    next unless $genes{$line[2]}{$line[1]};
-    next unless $genes{$line[6]}{$line[5]};
+
+    if ($TYPE eq 'strict') {
+        if ( (scalar(split('|', $line[8])) > 2) and ($line[9] =~ /Yes/ or $line[10] eq 'Yes')) {
+            print $fh "$line[1]\t$line[5]\t100\n";
+	}
+    } 
+    elsif ($TYPE eq 'moderate') {
+        if ( (scalar(split('|', $line[8])) > 2) or ($line[8] =~ /\|/ and ($line[9] =~ /Yes/ or $line[10] eq 'Yes') ) ) {
+            print $fh "$line[1]\t$line[5]\t100\n";
+	}
+    }
+    elsif ($TYPE eq 'none') {
+        print $fh "$line[1]\t$line[5]\t100\n";
+    }
+    else {
+        warn "filter TYPE (one of strict, moderate or none) not specified on the command line!" and die;
+    }
+
     print $fh "$line[1]\t$line[5]\t100\n";
 
 }
