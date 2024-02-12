@@ -93,7 +93,9 @@ parallel /agr_jbrowse_gff/scripts/gff2bedgenes.pl {} ::: "${PATHPART[@]}"
 parallel AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read {}.bed s3://agrjbrowse/orthology/$RELEASE/ ::: "${PATHPART[@]}"
 
 # fetch orthology file and split to anchors files and upload
-/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE
+/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE stringent
+/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE moderate
+/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE none
 
 #will want to add sorting, bgzipping and tabix indexing of GFF files here 
 

@@ -4,9 +4,10 @@ use warnings;
 use JSON;
 
 my $RELEASE = $ARGV[0];
-my $TYPE    = $ARGV[1]; # one of "strict", "moderate" or "none"
+my $TYPE    = $ARGV[1]; # one of "stringent", "moderate" or "none"
 
 die "no release defined" unless $RELEASE;
+die "no filter level defined, should be one of 'stringent', 'moderate' or 'none" unless $TYPE;
 
 #fetch orthology file
 system("curl -o combined.json https://fms.alliancegenome.org/api/datafile/by/ORTHOLOGY-ALLIANCE/COMBINED?latest=true") == 0
@@ -185,6 +186,8 @@ while(<$Xtbed>) {
     $genes{'NCBITaxon:8364'}{$line[3]}++;
 }
 
+
+my %seen;
 while(<ORTHOLOGY>) {
     next if /^#/;
     chomp;
@@ -193,45 +196,66 @@ while(<ORTHOLOGY>) {
 
     next if $line[0] eq 'Gene1ID';
 
-    next unless $genes{$line[2]}{$line[1]};
-    next unless $genes{$line[6]}{$line[5]};
+    my $gene1 = $line[1];
+    my $species1 = $line[2];
+    my $gene2 = $line[5];
+    my $species2 = $line[6];
 
-    my $fh = $$filehandle_map{$$species_map{$line[2]} . "2" . $$species_map{$line[6]}};
+    next unless $genes{$species1}{$gene1};
+    next unless $genes{$species2}{$gene2};
+
+    # already entered this combo in the opposite direction
+    next if $seen{$species2}{$gene2}{$species1}{$gene1};
+    next if $seen{$species1}{$gene1}{$species2}{$gene2};
+
+    my $fh = $$filehandle_map{$$species_map{$species1} . "2" . $$species_map{$species2}};
 
     if (!defined $fh) {
-        print "No filehandle for $line[2] to $line[6]\n";
-        next;
-    }
-
-    if (!defined $fh) {
-        print "No filehandle for $line[2] to $line[6]\n";
-        next;
+        #print "No filehandle for $line[2] to $line[6]\n";
+        #no need to warn about this
+        #but swap order and see if that works
+        my $genetemp = $gene1;
+        my $speciestemp = $species1;
+        $gene1    = $gene2;
+        $species1 = $species2;
+        $gene2    = $genetemp;
+        $species2 = $speciestemp;
+        next if $seen{$species2}{$gene2}{$species1}{$gene1};
+        next if $seen{$species1}{$gene1}{$species2}{$gene2};
+        $fh = $$filehandle_map{$$species_map{$species1} . "2" . $$species_map{$species2}};
     }
 
     #automatically include
     if ($line[8] =~ /ZFIN/ or $line[8] =~ /HGNC/ or $line[8] =~ /Xenbase/) {
-        print $fh "$line[1]\t$line[5]\t100\n";
+        print $fh "$gene1\t$gene2\t100\n";
+	$seen{$species1}{$gene1}{$species2}{$gene2}++;
 	next;
     }
 
-    if ($TYPE eq 'strict') {
-        if ( (scalar(split('|', $line[8])) > 2) and ($line[9] =~ /Yes/ or $line[10] eq 'Yes')) {
-            print $fh "$line[1]\t$line[5]\t100\n";
+    my $algcount   = $line[9];
+    my $besthit    = $line[11] =~ /Yes/ ? 1 : 0;
+    my $revbesthit = $line[12] eq 'Yes' ? 1 : 0;
+    if ($TYPE eq 'stringent') {
+        if ( (($algcount > 2)  and ($besthit or $revbesthit))
+	  or (($algcount == 2) and ($besthit and $revbesthit))) {
+	    $seen{$species1}{$gene1}{$species2}{$gene2}++;
+            print $fh "$gene1\t$gene2\t100\n";
 	}
     } 
     elsif ($TYPE eq 'moderate') {
-        if ( (scalar(split('|', $line[8])) > 2) or ($line[8] =~ /\|/ and ($line[9] =~ /Yes/ or $line[10] eq 'Yes') ) ) {
-            print $fh "$line[1]\t$line[5]\t100\n";
+        if ( ($algcount > 2)
+	  or ($algcount == 2 and ($besthit or $revbesthit) ) ) {
+	    $seen{$species1}{$gene1}{$species2}{$gene2}++;
+            print $fh "$gene1\t$gene2\t100\n";
 	}
     }
     elsif ($TYPE eq 'none') {
-        print $fh "$line[1]\t$line[5]\t100\n";
+	$seen{$species1}{$gene1}{$species2}{$gene2}++;
+        print $fh "$gene1\t$gene2\t100\n";
     }
     else {
-        warn "filter TYPE (one of strict, moderate or none) not specified on the command line!" and die;
+        warn "filter TYPE (one of stringent, moderate or none) not specified on the command line!" and die;
     }
-
-    print $fh "$line[1]\t$line[5]\t100\n";
 
 }
 
@@ -240,9 +264,9 @@ for my $keys (keys %{$filehandle_map}) {
 }
 
 #deposit new anchors files in S3
-my @anchors = <*.anchors>;
+my @anchors = <*$TYPE.anchors>;
 for my $file (@anchors) {
     system("AWS_ACCESS_KEY_ID=$ENV{'AWS_ACCESS_KEY'} AWS_SECRET_ACCESS_KEY=$ENV{'AWS_SECRET_KEY'} aws s3 cp --acl public-read $file s3://agrjbrowse/orthology/$RELEASE/") == 0
-        or die "failed to copy $file to s3: $!";
+	or die "failed to copy $file to s3: $!";
 }
 
