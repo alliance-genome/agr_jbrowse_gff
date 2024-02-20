@@ -4,13 +4,12 @@ use warnings;
 use JSON;
 
 my $RELEASE = $ARGV[0];
-my $TYPE    = $ARGV[1]; # one of "stringent", "moderate" or "none"
+my $TYPE    = $ARGV[1]; # one of "best", "stringent", "moderate" or "none"
 
 die "no release defined" unless $RELEASE;
 die "no filter level defined, should be one of 'stringent', 'moderate' or 'none" unless $TYPE;
 
-#fetch orthology file
-system("curl -o combined.json https://fms.alliancegenome.org/api/datafile/by/ORTHOLOGY-ALLIANCE/COMBINED?latest=true") == 0
+system("curl -o combined.json https://fms.alliancegenome.org/api/datafile/by/ORTHO?latest=true") == 0
      or die "fetching orthology info failed: $!";
 
 my $blob;
@@ -18,20 +17,40 @@ my $blob;
         local $/ = undef;
 	open JS, "<combined.json" or die "couldn't open combined.json: $!";
         $blob = <JS>;
-	print $blob;
 	close JS;
 }
 
 my $json = JSON->new->decode($blob);
-print $json;
-my $combined_url = $$json[0]{'s3Url'};
-system("curl -o ORTHOLOGY-ALLIANCE_COMBINED_5.tsv.gz $combined_url") == 0
-    or die "fetching orthology tsv failed: $!";
 
-system("gzip -d ORTHOLOGY-ALLIANCE_COMBINED_5.tsv.gz") == 0
-    or die "unzipping orthology tsv failed: $!";
+for my $section (@{$json}) {
+    next if ($$section{'s3Url'} =~ /1\.0\.1\.7/);
+    system("curl -O $$section{'s3Url'}") == 0 or die "failed fetching $$section{'s3Url'}: $!";
+}
 
-open ORTHOLOGY, "<ORTHOLOGY-ALLIANCE_COMBINED_5.tsv" or die "opening orthology file failed: $!";
+my @compressed_json = <*.json.gz>;
+my @jsons;
+for my $file (@compressed_json) {
+    system("gzip -d $file") == 0 or die "failed uncompressing $file: $!";
+    my $temp ;
+    if ($file =~ /(.*)\.gz/) {
+        push @jsons, $1;
+    } else {
+        warn "this shouldn't happen: $file";
+	push @jsons, $file;
+    }
+}
+
+#fetch ID->symbol lookup file
+system("curl -O https://s3.amazonaws.com/agrjbrowse/orthology/7.0.0/all.lookup.txt");
+my %lookup;
+open LOOKUP, "<all.lookup.txt" or die "couldn't open all.lookup.txt: $!";
+while (<LOOKUP>) {
+    chomp;
+    my ($id, $symbol) = split /\t/;
+    $lookup{$id} = $symbol;
+}
+close LOOKUP;
+
 
 open my $h2r, ">", "human2rat.$TYPE.anchors" or die "Can't open human2rat.$TYPE.anchors:$!";
 open my $h2m, ">", "human2mouse.$TYPE.anchors" or die "Can't open human2mouse.$TYPE.anchors:$!";
@@ -78,15 +97,15 @@ open my $w2y, ">", "worm2yeast.$TYPE.anchors" or die "Can't open worm2yeast.$TYP
 open my $f2y, ">", "fly2yeast.$TYPE.anchors" or die "Can't open fly2yeast.$TYPE.anchors:$!";
 
 my $species_map ={ 
-	"NCBITaxon:7955" => "z",
-	"NCBITaxon:8364" => "xt",
-	"NCBITaxon:8355" => "xl",
-	"NCBITaxon:6239" => "w",
-	"NCBITaxon:7227" => "f",
-	"NCBITaxon:10090" => "m",
-	"NCBITaxon:10116" => "r",
-	"NCBITaxon:9606" => "h",
-	"NCBITaxon:559292" => "y",
+	"7955" => "z",
+	"8364" => "xt",
+	"8355" => "xl",
+	"6239" => "w",
+	"7227" => "f",
+	"10090" => "m",
+	"10116" => "r",
+	"9606" => "h",
+	"4932" => "y",  #"559292" => "y",
 };
 
 my $filehandle_map = {
@@ -143,120 +162,158 @@ my %genes;
 while(<$humanbed>) {
     chomp;
     my @line = split /\t/;
-    $genes{'NCBITaxon:9606'}{$line[3]}++;
+    next unless $line[3];
+    $genes{'9606'}{$line[3]}++;
 }
 while(<$ratbed>) {
     chomp;
     my @line = split /\t/;
-    $genes{'NCBITaxon:10116'}{$line[3]}++;
+    next unless $line[3];
+    $genes{'10116'}{$line[3]}++;
 }
 while(<$mousebed>) {
     chomp;
     my @line = split /\t/;
-    $genes{'NCBITaxon:10090'}{$line[3]}++;
+    next unless $line[3];
+    $genes{'10090'}{$line[3]}++;
 }
 while(<$fishbed>) {
     chomp;
     my @line = split /\t/;
-    $genes{'NCBITaxon:7955'}{$line[3]}++;
+    next unless $line[3];
+    $genes{'7955'}{$line[3]}++;
 }
 while(<$yeastbed>) {
     chomp;
     my @line = split /\t/;
-    $genes{'NCBITaxon:559292'}{$line[3]}++;
+    next unless $line[3];
+    $genes{'4932'}{$line[3]}++;  #$genes{'559292'}{$line[3]}++;
 }
 while(<$wormbed>) {
     chomp;
     my @line = split /\t/;
-    $genes{'NCBITaxon:6239'}{$line[3]}++;
+    next unless $line[3];
+    $genes{'6239'}{$line[3]}++;
 }
 while(<$flybed>) {
     chomp;
     my @line = split /\t/;
-    $genes{'NCBITaxon:7227'}{$line[3]}++;
+    next unless $line[3];
+    $genes{'7227'}{$line[3]}++;
 }
 while(<$Xlbed>) {
     chomp;
     my @line = split /\t/;
-    $genes{'NCBITaxon:8355'}{$line[3]}++;
+    next unless $line[3];
+    $genes{'8355'}{$line[3]}++;
 }
 while(<$Xtbed>) {
     chomp;
     my @line = split /\t/;
-    $genes{'NCBITaxon:8364'}{$line[3]}++;
+    next unless $line[3];
+    $genes{'8364'}{$line[3]}++;
 }
 
+my %species_prefix = (
+    '9606'   => '',
+    '10116'  => '',
+    '10090'  => '',
+    '7955'   => 'ZFIN:',
+    '559292' => 'SGD:',
+    '4932'   => 'SGD:',
+    '6239'   => 'WB:',
+    '7227'   => 'FB:',
+    '8355'   => '',
+    '8364'   => ''
+);
 
 my %seen;
-while(<ORTHOLOGY>) {
-    next if /^#/;
-    chomp;
-    my $line = $_;
-    my @line = split /\t/, $line;
+for my $org (@jsons) {
 
-    next if $line[0] eq 'Gene1ID';
+    {
+        local $/ = undef;
+        open JS, "<$org" or die "couldn't open combined.json: $!";
+        $blob = <JS>;
+        close JS;
+    }
 
-    my $gene1 = $line[1];
-    my $species1 = $line[2];
-    my $gene2 = $line[5];
-    my $species2 = $line[6];
+    my $data = JSON->new->decode($blob);
 
-    next unless $genes{$species1}{$gene1};
-    next unless $genes{$species2}{$gene2};
+    for my $section (@{$$data{'data'}}) {
 
-    # already entered this combo in the opposite direction
-    next if $seen{$species2}{$gene2}{$species1}{$gene1};
-    next if $seen{$species1}{$gene1}{$species2}{$gene2};
+	    #need to handle geneID to geneSymbol mappings
+        my $species1 = $$section{'gene1Species'};
+	my $gene1    = substr($$section{'gene1'},5);
+        my $species2 = $$section{'gene2Species'};
+	my $gene2    = substr($$section{'gene2'},5);
 
-    my $fh = $$filehandle_map{$$species_map{$species1} . "2" . $$species_map{$species2}};
+        if ($species_prefix{$species1}) {
+            $gene1 = $species_prefix{$species1}.$gene1;
+	}
+	if ($species_prefix{$species2}) {
+            $gene2 = $species_prefix{$species2}.$gene2;
+	}
 
-    if (!defined $fh) {
+	if ($species1 == 10116 and $species2 == '559292') {
+  	    warn $gene2, $gene1;
+        }
+
+        next unless $gene1;
+	next unless $gene2;
+
+	$gene1 = $lookup{$gene1};
+	$gene2 = $lookup{$gene2};
+	
+	next unless $gene1;
+	next unless $gene2;
+
+        next unless $genes{$species1}{$gene1};
+        next unless $genes{$species2}{$gene2};
+
+        # already entered this combo in the opposite direction
+        next if $seen{$species2}{$gene2}{$species1}{$gene1};
+        next if $seen{$species1}{$gene1}{$species2}{$gene2};
+
+        my $fh = $$filehandle_map{$$species_map{$species1} . "2" . $$species_map{$species2}};
+
+        if (!defined $fh) {
         #print "No filehandle for $line[2] to $line[6]\n";
         #no need to warn about this
         #but swap order and see if that works
-        my $genetemp = $gene1;
-        my $speciestemp = $species1;
-        $gene1    = $gene2;
-        $species1 = $species2;
-        $gene2    = $genetemp;
-        $species2 = $speciestemp;
-        next if $seen{$species2}{$gene2}{$species1}{$gene1};
-        next if $seen{$species1}{$gene1}{$species2}{$gene2};
-        $fh = $$filehandle_map{$$species_map{$species1} . "2" . $$species_map{$species2}};
-    }
+            my $genetemp    = $gene1;
+            my $speciestemp = $species1;
+            $gene1    = $gene2;
+            $species1 = $species2;
+            $gene2    = $genetemp;
+            $species2 = $speciestemp;
+            next if $seen{$species2}{$gene2}{$species1}{$gene1};
+            next if $seen{$species1}{$gene1}{$species2}{$gene2};
+            $fh = $$filehandle_map{$$species_map{$species1} . "2" . $$species_map{$species2}};
+        }
 
-    #automatically include
-    if ($line[8] =~ /ZFIN/ or $line[8] =~ /HGNC/ or $line[8] =~ /Xenbase/) {
-        print $fh "$gene1\t$gene2\t100\n";
-	$seen{$species1}{$gene1}{$species2}{$gene2}++;
-	next;
-    }
-
-    my $algcount   = $line[9];
-    my $besthit    = $line[11] =~ /Yes/ ? 1 : 0;
-    my $revbesthit = $line[12] eq 'Yes' ? 1 : 0;
-    if ($TYPE eq 'stringent') {
-        if ( (($algcount > 2)  and ($besthit or $revbesthit))
-	  or (($algcount == 2) and ($besthit and $revbesthit))) {
+	if ($TYPE eq 'best') {
+            if ( $$section{'isBestRevScore'} eq'Yes' and $$section{'isBestScore'} =~ /Yes/ ) {
+                $seen{$species1}{$gene1}{$species2}{$gene2}++;
+                print $fh "$gene1\t$gene2\t100\n";
+	    }
+	}
+        if ($TYPE eq 'stringent') {
+            if ( $$section{'strictFilter'} ) {
+	        $seen{$species1}{$gene1}{$species2}{$gene2}++;
+                print $fh "$gene1\t$gene2\t100\n";
+            }
+        } 
+        elsif ($TYPE eq 'moderate') {
+            if ( $$section{'moderateFilter'} or $$section{'strictFilter'} ) {
+	        $seen{$species1}{$gene1}{$species2}{$gene2}++;
+                print $fh "$gene1\t$gene2\t100\n";
+   	    }
+        }
+        elsif ($TYPE eq 'none') {
 	    $seen{$species1}{$gene1}{$species2}{$gene2}++;
             print $fh "$gene1\t$gene2\t100\n";
-	}
-    } 
-    elsif ($TYPE eq 'moderate') {
-        if ( ($algcount > 2)
-	  or ($algcount == 2 and ($besthit or $revbesthit) ) ) {
-	    $seen{$species1}{$gene1}{$species2}{$gene2}++;
-            print $fh "$gene1\t$gene2\t100\n";
-	}
+        }
     }
-    elsif ($TYPE eq 'none') {
-	$seen{$species1}{$gene1}{$species2}{$gene2}++;
-        print $fh "$gene1\t$gene2\t100\n";
-    }
-    else {
-        warn "filter TYPE (one of stringent, moderate or none) not specified on the command line!" and die;
-    }
-
 }
 
 for my $keys (keys %{$filehandle_map}) {
@@ -269,4 +326,7 @@ for my $file (@anchors) {
     system("AWS_ACCESS_KEY_ID=$ENV{'AWS_ACCESS_KEY'} AWS_SECRET_ACCESS_KEY=$ENV{'AWS_SECRET_KEY'} aws s3 cp --acl public-read $file s3://agrjbrowse/orthology/$RELEASE/") == 0
 	or die "failed to copy $file to s3: $!";
 }
+
+unlink glob "*_1.json";
+unlink glob "*.anchors";
 
