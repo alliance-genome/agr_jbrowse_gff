@@ -99,6 +99,7 @@ AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl pu
 /agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE stringent
 /agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE moderate
 /agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE none
+/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE best
 
 #will want to add sorting, bgzipping and tabix indexing of GFF files here 
 
