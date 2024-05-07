@@ -41,7 +41,7 @@ for my $file (@compressed_json) {
 }
 
 #fetch ID->symbol lookup file
-system("curl -O https://s3.amazonaws.com/agrjbrowse/orthology/7.0.0/all.lookup.txt");
+system("curl -O https://s3.amazonaws.com/agrjbrowse/orthology/$RELEASE/all.lookup.txt") ==0 or die "fetching look up file failed";
 my %lookup;
 open LOOKUP, "<all.lookup.txt" or die "couldn't open all.lookup.txt: $!";
 while (<LOOKUP>) {
@@ -148,15 +148,15 @@ my $filehandle_map = {
 };
 
 #read in the species bed files to check for gene existance later
-open my $humanbed, "<", "HUMAN.bed" or die "Can't open gff/HUMAN.bed:$!";
-open my $ratbed  , "<", "RGD.bed"   or die "Can't open gff/RGD.bed:$!";
-open my $mousebed, "<", "MGI.bed"   or die "Can't open gff/MGI.bed:$!";
-open my $fishbed,  "<", "ZFIN.bed"  or die "Can't open gff/ZFIN.bed:$!";
-open my $yeastbed, "<", "SGD.bed"   or die "Can't open gff/SGD.bed:$!";
-open my $wormbed,  "<", "WB.bed"    or die "Can't open gff/WB.bed:$!";
-open my $flybed,   "<", "FB.bed"    or die "Can't open gff/FB.bed:$!";
-open my $Xlbed,    "<", "XBXL.bed"  or die "Can't open gff/XBXL.bed:$!";
-open my $Xtbed,    "<", "XBXT.bed"  or die "Can't open gff/XBXT.bed:$!";
+open my $humanbed, "<", "HUMAN.bed" or die "Can't open HUMAN.bed:$!";
+open my $ratbed  , "<", "RGD.bed"   or die "Can't open RGD.bed:$!";
+open my $mousebed, "<", "MGI.bed"   or die "Can't open MGI.bed:$!";
+open my $fishbed,  "<", "ZFIN.bed"  or die "Can't open ZFIN.bed:$!";
+open my $yeastbed, "<", "SGD.bed"   or die "Can't open SGD.bed:$!";
+open my $wormbed,  "<", "WB.bed"    or die "Can't open WB.bed:$!";
+open my $flybed,   "<", "FB.bed"    or die "Can't open FB.bed:$!";
+open my $Xlbed,    "<", "XBXL.bed"  or die "Can't open XBXL.bed:$!";
+open my $Xtbed,    "<", "XBXT.bed"  or die "Can't open XBXT.bed:$!";
 
 my %genes;
 while(<$humanbed>) {
