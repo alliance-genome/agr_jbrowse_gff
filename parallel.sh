@@ -86,7 +86,11 @@ cd $WORKDIR
 #parallel wget -q https://fms.alliancegenome.org/api/datafile/by/$RELEASE/GFF/{}?latest=true :::"${PATHPART[@]}"
 #curl https://fms.alliancegenome.org/api/datafile/by/GFF?latest=true | python3 /get_gff_urls.py | parallel
 
-parallel (curl https://fms.alliancegenome.org/api/datafile/by/$RELEASE/GFF/{}?latest=true | python3 /get_gff_urls.py) ::: "${PATHPART[@]}"
+#parallel (curl https://fms.alliancegenome.org/api/datafile/by/$RELEASE/GFF/{}?latest=true | python3 /get_gff_urls.py) ::: "${PATHPART[@]}"
+for mod in "${PATHPART[@]}"
+do
+    curl https://fms.alliancegenome.org/api/datafile/by/$RELEASE/GFF/$mod?latest=true | python3 /get_gff_urls.py
+done
 
 #sloppy way to match the number in the file name 
 parallel gzip -d GFF_{}*.gff.gz ::: "${PATHPART[@]}"
