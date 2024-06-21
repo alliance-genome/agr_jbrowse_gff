@@ -6,24 +6,15 @@ Tools for processing Alliance GFF into JBrowse NCList
 
 The container defined by the Docker file in this repo does several things:
 
-- Fetches the _latest_ GFF files for each assembly from the FMS (see note/warning
-  below).
+- Fetches the _latest_ GFF files for each assembly for a release from the FMS.
 - Creates BED and MCScanX-style anchor files for the orthology/synteny tracks.
 - Processes the GFF in to JBrowse NCList tracks and does search indexing.
 - Uploads all of this to the agrjbrowse S3 bucket.
 
-# Warning about getting the _latest_ GFF files
-
-This tool assumes that a human has verified that what is currently in the
-FMS as the latest GFF3 files are what is desired for this build. If that
-is not the case, the options for dealing with it are doing much of the
-processing by hand or to modify the the `get_gff_urls.py` in this repo
-to fetch the GFF3 files you need.
-
 # Typical workflow
 
 1. When all of the GFF files are in place in the FMS for the coming release,
-   update the `RELEASE=` in parallel.sh to the release you're build and commit
+   update the `RELEASE=` in parallel.sh to the release you're building and commit
    and push the change.
 
 2. Unpause the `JBrowseSoftwareProcessAGR` and `JBrowseProcessAGR` pipelines
