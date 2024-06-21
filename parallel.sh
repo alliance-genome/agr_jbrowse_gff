@@ -2,7 +2,7 @@
 
 set -e
 
-RELEASE=7.2.0
+RELEASE=7.3.0
 
 while getopts r:s:a:k: option
 do
@@ -80,9 +80,13 @@ PATHPART=(
 WORKDIR=/jbrowse
 cd $WORKDIR
 
+#https://fms.alliancegenome.org/api/datafile/by/7.3.0/GFF/ZFIN?latest=true
 #parallel wget -q https://fms.alliancegenome.org/download/GFF_{}.gff.gz ::: "${PATHPART[@]}"
-curl https://fms.alliancegenome.org/api/datafile/by/GFF?latest=true | python3 /get_gff_urls.py | parallel
 
+#parallel wget -q https://fms.alliancegenome.org/api/datafile/by/$RELEASE/GFF/{}?latest=true :::"${PATHPART[@]}"
+#curl https://fms.alliancegenome.org/api/datafile/by/GFF?latest=true | python3 /get_gff_urls.py | parallel
+
+parallel curl https://fms.alliancegenome.org/api/datafile/by/$RELEASE/GFF/{}?latest=true ::: "${PATHPART[@]}" | python3 /get_gff_urls.py
 
 #sloppy way to match the number in the file name 
 parallel gzip -d GFF_{}*.gff.gz ::: "${PATHPART[@]}"
