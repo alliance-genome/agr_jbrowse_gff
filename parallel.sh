@@ -97,25 +97,25 @@ parallel gzip -d GFF_{}*.gff.gz ::: "${PATHPART[@]}"
 parallel mv GFF_{}*.gff GFF_{}.gff ::: "${PATHPART[@]}"
 
 #create bed files for orthology tracks
-parallel /agr_jbrowse_gff/scripts/gff2bedgenes.pl {} ::: "${PATHPART[@]}"
-parallel AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read {}.bed s3://agrjbrowse/orthology/$RELEASE/ ::: "${PATHPART[@]}"
+#parallel /agr_jbrowse_gff/scripts/gff2bedgenes.pl {} ::: "${PATHPART[@]}"
+#parallel AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read {}.bed s3://agrjbrowse/orthology/$RELEASE/ ::: "${PATHPART[@]}"
 
 cat *lookup.txt > all.lookup.txt
 AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read all.lookup.txt s3://agrjbrowse/orthology/$RELEASE/
 
 # fetch orthology file and split to anchors files and upload
-/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE stringent
-/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE moderate
-/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE none
-/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE best
+#/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE stringent
+#/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE moderate
+#/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE none
+#/agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE best
 
 #will want to add sorting, bgzipping and tabix indexing of GFF files here 
 
 echo "starting flatfile_to_json"
-parallel --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
+parallel -j 1 --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
 
 echo "starting generate_names"
-parallel bin/generate-names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
+parallel -j 1 bin/generate-names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
 
 DATADIR=/jbrowse/data
 
@@ -125,7 +125,7 @@ cd $DATADIR
 UPLOADTOS3PATH=/agr_jbrowse_config/scripts/upload_to_S3.pl
 
 
-parallel $UPLOADTOS3PATH --skipseq --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
+parallel -j 1 $UPLOADTOS3PATH --skipseq --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
  
 
 
