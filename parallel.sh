@@ -112,7 +112,17 @@ parallel mv GFF_{}*.gff GFF_{}.gff ::: "${PATHPART[@]}"
 #will want to add sorting, bgzipping and tabix indexing of GFF files here 
 
 echo "starting flatfile_to_json"
-parallel -j 1 --link bin/flatfile-to-json.pl --compress --gff GFF_{1}.gff --out data/{2} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" --maxLookback 1000000 ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
+
+for i in {0..8}
+do
+    echo "$i"
+    jbrowse sort-gff GFF_${PATHPART[$i]}.gff > GFF_${PATHPART[$i]}.gff.sorted
+
+
+    bin/flatfile-to-json.pl --compress --gff GFF_${PATHPART[$i]}.gff.sorted --out data/${SPECIESLIST[$i] --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" 
+
+    echo "$i"
+done
 
 echo "starting generate_names"
 parallel -j 1 bin/generate-names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
