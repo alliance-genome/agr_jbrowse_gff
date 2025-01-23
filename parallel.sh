@@ -2,7 +2,7 @@
 
 set -e
 
-RELEASE=7.5.0
+RELEASE=8.0.0
 
 while getopts r:s:a:k: option
 do
@@ -119,7 +119,7 @@ do
     jbrowse sort-gff GFF_${PATHPART[$i]}.gff > GFF_${PATHPART[$i]}.gff.sorted
 
 
-    bin/flatfile-to-json.pl --compress --gff GFF_${PATHPART[$i]}.gff.sorted --out data/${SPECIESLIST[$i] --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" 
+    bin/flatfile-to-json.pl --compress --gff GFF_${PATHPART[$i]}.gff.sorted --out data/${SPECIESLIST[$i]} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" 
 
     echo "$i"
 done
