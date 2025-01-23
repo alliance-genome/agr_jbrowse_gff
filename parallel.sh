@@ -116,7 +116,7 @@ echo "starting flatfile_to_json"
 for i in {0..8}
 do
     echo "$i"
-    jbrowse sort-gff GFF_${PATHPART[$i]}.gff > GFF_${PATHPART[$i]}.gff.sorted
+    #jbrowse sort-gff GFF_${PATHPART[$i]}.gff > GFF_${PATHPART[$i]}.gff.sorted
 
 
     bin/flatfile-to-json.pl --compress --gff GFF_${PATHPART[$i]}.gff.sorted --out data/${SPECIESLIST[$i]} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" 
