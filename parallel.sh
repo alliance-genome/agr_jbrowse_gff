@@ -125,7 +125,7 @@ do
 done
 
 echo "starting generate_names"
-parallel -j 1 bin/generate-names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
+parallel -j "95%" bin/generate-names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
 
 DATADIR=/jbrowse/data
 
