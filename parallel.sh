@@ -2,7 +2,7 @@
 
 set -e
 
-RELEASE=8.0.0
+RELEASE=8.1.0
 
 while getopts r:s:a:k: option
 do
