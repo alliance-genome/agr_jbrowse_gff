@@ -30,7 +30,7 @@ for my $section (@{$json}) {
 my @compressed_json = <*.json.gz>;
 my @jsons;
 for my $file (@compressed_json) {
-    system("gzip -d $file") == 0 or die "failed uncompressing $file: $!";
+    system("gzip -df $file") == 0 or die "failed uncompressing $file: $!";
     my $temp ;
     if ($file =~ /(.*)\.gz/) {
         push @jsons, $1;

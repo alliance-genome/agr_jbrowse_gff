@@ -93,7 +93,7 @@ do
 done
 
 #sloppy way to match the number in the file name 
-parallel gzip -d GFF_{}*.gff.gz ::: "${PATHPART[@]}"
+parallel gzip -df GFF_{}*.gff.gz ::: "${PATHPART[@]}"
 parallel mv GFF_{}*.gff GFF_{}.gff ::: "${PATHPART[@]}"
 
 #create bed files for orthology tracks
