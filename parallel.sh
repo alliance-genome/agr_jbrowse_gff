@@ -2,7 +2,7 @@
 
 set -e
 
-RELEASE=9.0.0
+RELEASE=9.1.0
 
 while getopts r:s:a:k: option
 do
@@ -60,7 +60,7 @@ SPECIESLIST=(
 'human'
 'SGD/yeast'
 'WormBase/c_elegans_PRJNA13758'
-'zfin/zebrafish-11'
+'zfin/zebrafish'
 'XenBase/x_laevis'
 'XenBase/x_tropicalis'
 )
@@ -109,33 +109,35 @@ AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl pu
 /agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE none
 /agr_jbrowse_gff/scripts/split2pairwise.pl $RELEASE best
 
-#will want to add sorting, bgzipping and tabix indexing of GFF files here 
-
-echo "starting flatfile_to_json"
+echo "starting sort/bgzip/tabix"
 
 for i in {0..8}
 do
-    #echo "$i"
-    #jbrowse sort-gff GFF_${PATHPART[$i]}.gff > GFF_${PATHPART[$i]}.gff.sorted
-
-
-    bin/flatfile-to-json.pl --compress --gff GFF_${PATHPART[$i]}.gff --out data/${SPECIESLIST[$i]} --type gene,ncRNA_gene,pseudogene,rRNA_gene,snRNA_gene,snoRNA_gene,tRNA_gene,telomerase_RNA_gene,transposable_element_gene --trackLabel "All_Genes"  --trackType CanvasFeatures --key "All_Genes" 
-
-    #echo "$i"
+    jbrowse sort-gff GFF_${PATHPART[$i]}.gff | bgzip > GFF_${PATHPART[$i]}.sorted.gff.gz
+    tabix -p gff GFF_${PATHPART[$i]}.sorted.gff.gz
 done
 
-echo "starting generate_names"
-parallel -j "95%" bin/generate-names.pl --compress --out data/{} ::: "${SPECIESLIST[@]}"
+echo "starting text-index"
 
-DATADIR=/jbrowse/data
+for i in {0..8}
+do
+    jbrowse text-index --file GFF_${PATHPART[$i]}.sorted.gff.gz --out data/${SPECIESLIST[$i]}
+done
 
+echo "starting upload to S3"
 
-cd $DATADIR
-
-UPLOADTOS3PATH=/agr_jbrowse_config/scripts/upload_to_S3.pl
-
-
-parallel -j 1 $UPLOADTOS3PATH --skipseq --bucket $AWSBUCKET --local {} --remote "docker/$RELEASE/"{} --AWSACCESS $AWSACCESS --AWSSECRET $AWSSECRET ::: "${SPECIESLIST[@]}"
+for i in {0..8}
+do
+    AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET \
+        aws s3 cp --acl public-read GFF_${PATHPART[$i]}.sorted.gff.gz \
+        s3://$AWSBUCKET/docker/$RELEASE/${SPECIESLIST[$i]}/
+    AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET \
+        aws s3 cp --acl public-read GFF_${PATHPART[$i]}.sorted.gff.gz.tbi \
+        s3://$AWSBUCKET/docker/$RELEASE/${SPECIESLIST[$i]}/
+    AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET \
+        aws s3 cp --acl public-read --recursive data/${SPECIESLIST[$i]}/trix \
+        s3://$AWSBUCKET/docker/$RELEASE/${SPECIESLIST[$i]}/trix/
+done
  
 
 
