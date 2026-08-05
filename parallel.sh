@@ -108,6 +108,18 @@ done
 parallel gzip -df GFF_{}*.gff.gz ::: "${PATHPART[@]}"
 parallel mv GFF_{}*.gff GFF_{}.gff ::: "${PATHPART[@]}"
 
+
+echo "starting gene/non-gene split"
+
+GENE_PATTERN=$(paste -sd'|' /agr_jbrowse_gff/scripts/gff_gene_terms.txt)
+
+for mod in "${PATHPART[@]}"
+do
+    grep -E $'^#|^([^\t]*\t){2}('"$GENE_PATTERN"$')\t' GFF_${mod}.gff > GFF_${mod}.genes_only.gff || true
+    { grep -E '^#' GFF_${mod}.gff || true; grep -vE $'^#|^([^\t]*\t){2}('"$GENE_PATTERN"$')\t' GFF_${mod}.gff || true; } > GFF_${mod}_nongene.gff
+    mv GFF_${mod}.genes_only.gff GFF_${mod}.gff
+done
+
 #create bed files for orthology tracks
 parallel /agr_jbrowse_gff/scripts/gff2bedgenes.pl {} ::: "${PATHPART[@]}"
 parallel AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read {}.bed s3://agrjbrowse/orthology/$RELEASE/ ::: "${PATHPART[@]}"
@@ -125,6 +137,25 @@ echo "starting sort/bgzip/tabix"
 
 parallel "jbrowse sort-gff GFF_{}.gff | bgzip > GFF_{}.sorted.gff.gz && tabix -p gff GFF_{}.sorted.gff.gz" ::: "${PATHPART[@]}"
 
+echo "starting sort/bgzip/tabix for non-gene files (skipping any with no data lines)"
+
+NONGENE_PATHPART=()
+NONGENE_SPECIES=()
+for i in "${!PATHPART[@]}"
+do
+    mod=${PATHPART[$i]}
+    if grep -qv '^#' GFF_${mod}_nongene.gff
+    then
+        NONGENE_PATHPART+=("$mod")
+        NONGENE_SPECIES+=("${SPECIESLIST[$i]}")
+    fi
+done
+
+if [ ${#NONGENE_PATHPART[@]} -gt 0 ]
+then
+    parallel "jbrowse sort-gff GFF_{}_nongene.gff | bgzip > GFF_{}_nongene.sorted.gff.gz && tabix -p gff GFF_{}_nongene.sorted.gff.gz" ::: "${NONGENE_PATHPART[@]}"
+fi
+
 echo "starting text-index"
 
 parallel --link "jbrowse text-index --fileId {1} --file GFF_{2}.sorted.gff.gz --out data/{3}" ::: "${TRACKID[@]}" ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
@@ -132,6 +163,13 @@ parallel --link "jbrowse text-index --fileId {1} --file GFF_{2}.sorted.gff.gz --
 echo "starting upload to S3"
 
 parallel --link "AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read GFF_{1}.sorted.gff.gz s3://$AWSBUCKET/docker/$RELEASE/{2}/ && AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read GFF_{1}.sorted.gff.gz.tbi s3://$AWSBUCKET/docker/$RELEASE/{2}/ && AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read --recursive data/{2}/trix s3://$AWSBUCKET/docker/$RELEASE/{2}/trix/" ::: "${PATHPART[@]}" ::: "${SPECIESLIST[@]}"
- 
+
+if [ ${#NONGENE_PATHPART[@]} -gt 0 ]
+then
+    echo "starting upload of non-gene files to S3"
+
+    parallel --link "AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read GFF_{1}_nongene.sorted.gff.gz s3://$AWSBUCKET/docker/$RELEASE/{2}/ && AWS_ACCESS_KEY_ID=$AWSACCESS AWS_SECRET_ACCESS_KEY=$AWSSECRET aws s3 cp --acl public-read GFF_{1}_nongene.sorted.gff.gz.tbi s3://$AWSBUCKET/docker/$RELEASE/{2}/" ::: "${NONGENE_PATHPART[@]}" ::: "${NONGENE_SPECIES[@]}"
+fi
+
 
 
