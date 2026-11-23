@@ -1,8 +1,8 @@
-#!/bin/bash
+#/bin/bash
 
 set -e
 
-RELEASE=9.2.0
+RELEASE=9.3.0
 
 while getopts r:s:a:k: option
 do
